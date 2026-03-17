@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔥 INFERNO DORITOS CLICKER</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=VT323&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+  :root {
+    --void: #050000;
+    --ash: #1a0808;
+    --ember: #3d0000;
+    --lava: #8B1A00;
+    --fire: #FF4500;
+    --flame: #FF8C00;
+    --spark: #FFD700;
+    --white: #fff5e0;
+    --grey: #5a3030;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    background: var(--void);
+    color: var(--white);
+    font-family: 'VT323', monospace;
+    overflow-x: hidden;
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Ctext y='20' font-size='20'%3E🔥%3C/text%3E%3C/svg%3E") 0 20, auto;
+  }
+
+  /* LAVA BG */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 100%, #4a0a00 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 100%, #5a1500 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 80%, #3d0000 0%, transparent 60%);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 280px 1fr 300px;
+    gap: 12px;
+    padding: 12px;
+    min-height: 100vh;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===== PANELS ===== */
+  .panel {
+    background: linear-gradient(160deg, #1c0505 0%, #0e0202 100%);
+    border: 1px solid #3d0000;
+    border-radius: 8px;
+    padding: 14px;
+    box-shadow: 0 0 20px #ff450022, inset 0 0 30px #1a000088;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--fire), var(--spark), var(--fire), transparent);
+  }
+
+  .panel-title {
+    font-family: 'Bangers', cursive;
+    font-size: 24px;
+    color: var(--spark);
+    letter-spacing: 3px;
+    text-align: center;
+    text-shadow: 0 0 10px var(--fire);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--ember);
+  }
+
+  /* ===== CENTER ===== */
+  .center-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .stats-bar {
+    width: 100%;
+    background: #0e0000;
+    border: 1px solid var(--ember);
+    border-radius: 6px;
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .stat-item {
+    text-align: center;
+    flex: 1;
+  }
+
+  .stat-label {
+    font-size: 13px;
+    color: var(--grey);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .stat-value {
+    font-size: 22px;
+    color: var(--spark);
+    text-shadow: 0 0 8px var(--flame);
+  }
+
+  /* ===== MAIN CHIP ===== */
+  .chip-area {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .chip-glow {
+    position: absolute;
+    inset: -20px;
+    background: radial-gradient(ellipse, #ff450033 0%, transparent 70%);
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+  }
+
+  .main-chip {
+    font-size: 140px;
+    cursor: pointer;
+    user-select: none;
+    filter: drop-shadow(0 0 20px #ff4500) drop-shadow(0 0 40px #ff8c00);
+    transition: transform 0.08s;
+    animation: floatChip 3s ease-in-out infinite;
+    position: relative;
+    z-index: 2;
+  }
+
+  @keyframes floatChip {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50% { transform: translateY(-10px) rotate(3deg); }
+  }
+
+  .main-chip:active {
+    transform: scale(0.88) rotate(-5deg) !important;
+    filter: drop-shadow(0 0 30px #fff) drop-shadow(0 0 60px #ff4500);
+  }
+
+  /* floating +1 text on click */
+  .float-text {
+    position: absolute;
+    font-family: 'Bangers', cursive;
+    font-size: 28px;
+    color: var(--spark);
+    text-shadow: 0 0 10px var(--fire);
+    pointer-events: none;
+    z-index: 100;
+    animation: floatUp 1.2s ease-out forwards;
+  }
+
+  @keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-120px) scale(0.5); }
+  }
+
+  /* fire particles */
+  .fire-particles { position: absolute; inset: 0; pointer-events: none; overflow: visible; z-index: 1; }
+
+  .particle {
+    position: absolute;
+    font-size: 18px;
+    animation: particleRise linear forwards;
+    opacity: 0.9;
+    bottom: 30px;
+  }
+
+  @keyframes particleRise {
+    0% { opacity: 0.9; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-160px) scale(0.2); }
+  }
+
+  /* ===== UPGRADES ===== */
+  .upgrades-section {
+    width: 100%;
+  }
+
+  .section-label {
+    font-family: 'Bangers', cursive;
+    font-size: 16px;
+    color: var(--flame);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  .upgrades-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .upgrade-btn {
+    background: linear-gradient(135deg, #1e0505, #2d0a00);
+    border: 1px solid var(--lava);
+    border-radius: 6px;
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+    color: var(--white);
+    font-family: 'VT323', monospace;
+  }
+
+  .upgrade-btn:hover:not(:disabled) {
+    border-color: var(--fire);
+    background: linear-gradient(135deg, #2d0808, #3d1200);
+    box-shadow: 0 0 12px #ff450044;
+  }
+
+  .upgrade-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .upgrade-btn.bought {
+    border-color: var(--spark);
+    background: linear-gradient(135deg, #2a1f00, #1a1000);
+    opacity: 0.7;
+    cursor: default;
+  }
+
+  .upgrade-name { font-size: 14px; color: var(--spark); }
+  .upgrade-cost { font-size: 13px; color: var(--flame); }
+  .upgrade-desc { font-size: 12px; color: var(--grey); }
+
+  /* ===== SHOP ===== */
+  .shop-scroll { overflow-y: auto; max-height: calc(100vh - 80px); padding-right: 4px; }
+  .shop-scroll::-webkit-scrollbar { width: 4px; }
+  .shop-scroll::-webkit-scrollbar-track { background: #0e0000; }
+  .shop-scroll::-webkit-scrollbar-thumb { background: var(--lava); border-radius: 2px; }
+
+  .shop-item {
+    background: linear-gradient(135deg, #1a0505, #120200);
+    border: 1px solid var(--ember);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shop-item::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 60%, rgba(255,69,0,0.05));
+    pointer-events: none;
+  }
+
+  .shop-item:hover:not(.disabled) {
+    border-color: var(--fire);
+    box-shadow: 0 0 14px #ff450033;
+    transform: translateX(2px);
+  }
+
+  .shop-item.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .shop-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .shop-emoji { font-size: 26px; }
+
+  .shop-info { flex: 1; }
+  .shop-name { font-family: 'Bangers', cursive; font-size: 16px; color: var(--spark); letter-spacing: 1px; }
+  .shop-tagline { font-size: 12px; color: var(--grey); }
+
+  .shop-count {
+    font-size: 24px;
+    color: var(--flame);
+    font-family: 'Bangers', cursive;
+    min-width: 30px;
+    text-align: right;
+  }
+
+  .shop-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+  }
+
+  .shop-nps { font-size: 13px; color: #7a5050; }
+  .shop-cost { font-size: 16px; color: var(--fire); }
+
+  .heat-bar {
+    display: flex;
+    gap: 2px;
+    margin-top: 4px;
+  }
+
+  .heat-pip {
+    width: 10px;
+    height: 5px;
+    border-radius: 2px;
+    background: var(--ember);
+  }
+
+  .heat-pip.on { background: var(--fire); }
+
+  /* ===== LEADERBOARD ===== */
+  .leaderboard-section {
+    margin-bottom: 14px;
+  }
+
+  .lb-entry {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+    background: #0e0202;
+    border: 1px solid var(--ember);
+    font-size: 15px;
+  }
+
+  .lb-rank {
+    font-family: 'Bangers', cursive;
+    font-size: 18px;
+    min-width: 28px;
+    color: var(--grey);
+  }
+
+  .lb-rank.gold { color: var(--spark); text-shadow: 0 0 8px var(--spark); }
+  .lb-rank.silver { color: #c0c0c0; }
+  .lb-rank.bronze { color: #cd7f32; }
+
+  .lb-name { flex: 1; color: var(--white); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lb-name.me { color: var(--spark); }
+  .lb-score { color: var(--fire); font-size: 14px; }
+
+  .lb-empty { text-align: center; color: var(--grey); font-size: 14px; padding: 12px; }
+
+  /* ===== CHAT ===== */
+  .chat-section { display: flex; flex-direction: column; gap: 6px; }
+
+  .peer-id-area {
+    background: #0e0000;
+    border: 1px solid var(--ember);
+    border-radius: 6px;
+    padding: 8px;
+    font-size: 13px;
+  }
+
+  .peer-id-label { color: var(--grey); margin-bottom: 4px; }
+  .peer-id-value {
+    color: var(--spark);
+    font-size: 14px;
+    word-break: break-all;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .peer-id-value:hover { color: var(--flame); }
+
+  .connect-row {
+    display: flex;
+    gap: 4px;
+  }
+
+  .fire-input {
+    flex: 1;
+    background: #0e0000;
+    border: 1px solid var(--ember);
+    border-radius: 5px;
+    padding: 6px 10px;
+    color: var(--white);
+    font-family: 'VT323', monospace;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .fire-input:focus { border-color: var(--fire); box-shadow: 0 0 8px #ff450033; }
+
+  .fire-btn {
+    background: linear-gradient(135deg, var(--lava), var(--ember));
+    border: 1px solid var(--fire);
+    color: var(--spark);
+    font-family: 'Bangers', cursive;
+    font-size: 15px;
+    letter-spacing: 1px;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .fire-btn:hover {
+    background: linear-gradient(135deg, var(--fire), var(--lava));
+    box-shadow: 0 0 12px #ff450055;
+  }
+
+  .chat-messages {
+    background: #0a0000;
+    border: 1px solid var(--ember);
+    border-radius: 6px;
+    height: 160px;
+    overflow-y: auto;
+    padding: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .chat-messages::-webkit-scrollbar { width: 3px; }
+  .chat-messages::-webkit-scrollbar-thumb { background: var(--lava); }
+
+  .chat-msg { margin-bottom: 4px; }
+  .chat-msg .who { color: var(--flame); }
+  .chat-msg .txt { color: var(--white); }
+  .chat-msg.system { color: var(--grey); font-style: italic; }
+  .chat-msg.me .who { color: var(--spark); }
+
+  .chat-input-row {
+    display: flex;
+    gap: 4px;
+  }
+
+  .peers-list {
+    font-size: 13px;
+    color: var(--grey);
+    padding: 4px 0;
+    min-height: 18px;
+  }
+
+  /* ===== USERNAME MODAL ===== */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.92);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal {
+    background: linear-gradient(160deg, #1c0505, #0e0202);
+    border: 2px solid var(--fire);
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+    max-width: 360px;
+    box-shadow: 0 0 60px #ff450044;
+  }
+
+  .modal-title {
+    font-family: 'Bangers', cursive;
+    font-size: 42px;
+    color: var(--spark);
+    text-shadow: 0 0 20px var(--fire);
+    letter-spacing: 4px;
+    margin-bottom: 8px;
+  }
+
+  .modal-sub { color: var(--grey); font-size: 15px; margin-bottom: 20px; }
+
+  .modal-input {
+    background: #0e0000;
+    border: 1px solid var(--lava);
+    border-radius: 6px;
+    padding: 10px 14px;
+    color: var(--white);
+    font-family: 'VT323', monospace;
+    font-size: 22px;
+    width: 100%;
+    outline: none;
+    text-align: center;
+    margin-bottom: 14px;
+    letter-spacing: 2px;
+  }
+
+  .modal-input:focus { border-color: var(--fire); box-shadow: 0 0 12px #ff450055; }
+
+  .modal-btn {
+    background: linear-gradient(135deg, var(--fire), var(--lava));
+    border: none;
+    color: var(--white);
+    font-family: 'Bangers', cursive;
+    font-size: 22px;
+    letter-spacing: 3px;
+    padding: 10px 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 0 20px #ff450066;
+  }
+
+  .modal-btn:hover { transform: scale(1.05); box-shadow: 0 0 30px #ff450099; }
+
+  /* ===== NOTIFICATION ===== */
+  .notif {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #3d0000, #1c0505);
+    border: 1px solid var(--fire);
+    color: var(--spark);
+    font-family: 'Bangers', cursive;
+    font-size: 20px;
+    letter-spacing: 2px;
+    padding: 10px 24px;
+    border-radius: 6px;
+    z-index: 999;
+    animation: notifIn 0.3s ease-out, notifOut 0.4s 2s ease-in forwards;
+    box-shadow: 0 0 20px #ff450055;
+    pointer-events: none;
+  }
+
+  @keyframes notifIn { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+  @keyframes notifOut { to { opacity: 0; transform: translateX(-50%) translateY(-20px); } }
+
+  /* ===== TOTAL NPS LINE ===== */
+  .nps-line {
+    text-align: center;
+    font-size: 14px;
+    color: var(--grey);
+    margin-top: 4px;
+  }
+
+  /* ===== MILESTONE ===== */
+  .milestone {
+    font-family: 'Bangers', cursive;
+    font-size: 13px;
+    color: var(--ember);
+    text-align: center;
+    letter-spacing: 1px;
+    padding: 4px;
+  }
+</style>
+</head>
+<body>
+
+<!-- USERNAME MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-title">🔥 INFERNO DORITOS</div>
+    <div class="modal-sub">Enter your name before the flames consume you</div>
+    <input class="modal-input" id="usernameInput" placeholder="YOUR HANDLE" maxlength="16">
+    <br>
+    <button class="modal-btn" onclick="startGame()">ENTER HELL</button>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- LEFT: SHOP -->
+  <div class="panel">
+    <div class="panel-title">🛒 THE INFERNO SHOP</div>
+    <div class="shop-scroll" id="shopList"></div>
+  </div>
+
+  <!-- CENTER: CLICKER -->
+  <div class="panel center-panel">
+    <div class="panel-title" id="playerNameDisplay">🔥 CLICK TO IGNITE</div>
+
+    <div class="stats-bar">
+      <div class="stat-item">
+        <div class="stat-label">🔥 Nachos</div>
+        <div class="stat-value" id="nachoCount">0</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">⚡ Per Click</div>
+        <div class="stat-value" id="perClickDisplay">1</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">♨️ Per Sec</div>
+        <div class="stat-value" id="perSecDisplay">0</div>
+      </div>
+    </div>
+
+    <div class="chip-area" id="chipArea">
+      <div class="chip-glow"></div>
+      <div class="fire-particles" id="particles"></div>
+      <div class="main-chip" id="mainChip" onclick="clickChip(event)">🌶️</div>
+    </div>
+
+    <div class="nps-line" id="totalLine">Total nachos munched: 0</div>
+    <div class="milestone" id="milestoneText">Click the chip to get started!</div>
+
+    <!-- UPGRADES -->
+    <div class="upgrades-section">
+      <div class="section-label">⚡ CLICK POWER UPGRADES</div>
+      <div class="upgrades-grid" id="upgradesGrid"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: LEADERBOARD + CHAT -->
+  <div class="panel" style="display:flex;flex-direction:column;gap:10px;overflow:hidden;">
+    <div class="panel-title">🏆 HALL OF FLAME</div>
+
+    <div class="leaderboard-section">
+      <div id="leaderboardList"></div>
+    </div>
+
+    <div style="border-top:1px solid var(--ember);padding-top:10px;">
+      <div class="panel-title" style="font-size:18px;margin-bottom:8px;">💬 FIRE CHAT</div>
+      <div class="chat-section">
+        <div class="peer-id-area">
+          <div class="peer-id-label">🆔 Your Peer ID (click to copy):</div>
+          <div class="peer-id-value" id="myPeerId" onclick="copyPeerId()">Connecting...</div>
+        </div>
+        <div class="connect-row">
+          <input class="fire-input" id="connectInput" placeholder="Enter peer ID to connect...">
+          <button class="fire-btn" onclick="connectToPeer()">JOIN</button>
+        </div>
+        <div class="peers-list" id="peersList">No peers connected</div>
+        <div class="chat-messages" id="chatMessages">
+          <div class="chat-msg system">🔥 Welcome to the Inferno Chat. Connect with a peer ID to chat!</div>
+        </div>
+        <div class="chat-input-row">
+          <input class="fire-input" id="chatInput" placeholder="Type message..." onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="fire-btn" onclick="sendChat()">SEND</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// GAME DATA
+// ============================================================
+const CHIPS = [
+  { id: 'nacho',  emoji: '🧀', name: 'Nacho Cheese',      tag: '"The Gateway Drug"',    baseCost: 15,    nps: 1,    heat: 1 },
+  { id: 'ranch',  emoji: '💨', name: 'Cool Ranch',         tag: '"For the Weak"',        baseCost: 60,    nps: 4,    heat: 1 },
+  { id: 'spicy',  emoji: '🌶️', name: 'Spicy Nacho',       tag: '"Now We\'re Talking"',  baseCost: 250,   nps: 15,   heat: 2 },
+  { id: 'lava',   emoji: '🌋', name: 'Lava Doritos',       tag: '"Liquid Fire Inside"',  baseCost: 1100,  nps: 65,   heat: 3 },
+  { id: 'takis',  emoji: '🌀', name: 'Takis Fuego',        tag: '"Rolled in Flames"',    baseCost: 5500,  nps: 300,  heat: 3 },
+  { id: 'ghost',  emoji: '👻', name: 'Ghost Pepper',       tag: '"Beyond Human Limits"', baseCost: 28000, nps: 1500, heat: 4 },
+  { id: 'hell',   emoji: '😈', name: 'HELL DORITOS',       tag: '"NOT RECOMMENDED"',     baseCost: 150000,nps: 8000, heat: 5 },
+];
+
+const UPGRADES = [
+  { id: 'u1', name: 'Lighter Flick',   desc: '×2 per click',  cost: 200,   mult: 2 },
+  { id: 'u2', name: 'Blowtorch Hand',  desc: '×4 per click',  cost: 1500,  mult: 4 },
+  { id: 'u3', name: 'Volcano Fist',    desc: '×10 per click', cost: 8000,  mult: 10 },
+  { id: 'u4', name: 'HELLFIRE PUNCH',  desc: '×30 per click', cost: 50000, mult: 30 },
+];
+
+const MILESTONES = [
+  [100,    '🌶️ First burn!'],
+  [1000,   '🔥 Getting spicy!'],
+  [10000,  '🌋 LAVA LEVEL!'],
+  [100000, '☠️ GHOST ZONE!'],
+  [1e6,    '😈 HELL UNLOCKED!'],
+  [1e7,    '🔱 DORITO DEMON!'],
+  [1e8,    '💀 THE UNDYING CHIP!'],
+];
+
+// ============================================================
+// GAME STATE
+// ============================================================
+let state = {
+  nachos: 0,
+  totalNachos: 0,
+  nachoPerClick: 1,
+  nachoPerSec: 0,
+  chips: {},
+  upgrades: {},
+  username: '',
+};
+
+CHIPS.forEach(c => state.chips[c.id] = 0);
+UPGRADES.forEach(u => state.upgrades[u.id] = false);
+
+function getChipCost(id) {
+  const chip = CHIPS.find(c => c.id === id);
+  return Math.ceil(chip.baseCost * Math.pow(1.15, state.chips[id]));
+}
+
+function calcNPS() {
+  let nps = 0;
+  CHIPS.forEach(c => { nps += c.nps * state.chips[c.id]; });
+  return nps;
+}
+
+function calcClickPower() {
+  let base = 1;
+  UPGRADES.forEach(u => {
+    if (state.upgrades[u.id]) base *= u.mult;
+  });
+  // also +1 per 10 of each chip type
+  CHIPS.forEach(c => { base += Math.floor(state.chips[c.id] / 10) * c.nps * 0.1; });
+  return Math.max(1, Math.floor(base));
+}
+
+// ============================================================
+// SAVE / LOAD
+// ============================================================
+function saveGame() {
+  localStorage.setItem('infernoDoritos', JSON.stringify(state));
+  updateLeaderboard(state.username, state.totalNachos);
+}
+
+function loadGame() {
+  const saved = localStorage.getItem('infernoDoritos');
+  if (saved) {
+    try {
+      const s = JSON.parse(saved);
+      Object.assign(state, s);
+    } catch(e) {}
+  }
+}
+
+// ============================================================
+// LEADERBOARD (localStorage)
+// ============================================================
+function updateLeaderboard(name, score) {
+  if (!name) return;
+  let lb = getLeaderboard();
+  const idx = lb.findIndex(e => e.name === name);
+  if (idx >= 0) {
+    if (score > lb[idx].score) lb[idx].score = score;
+  } else {
+    lb.push({ name, score });
+  }
+  lb.sort((a,b) => b.score - a.score);
+  lb = lb.slice(0, 15);
+  localStorage.setItem('infernoLeaderboard', JSON.stringify(lb));
+  renderLeaderboard();
+}
+
+function getLeaderboard() {
+  try {
+    return JSON.parse(localStorage.getItem('infernoLeaderboard') || '[]');
+  } catch(e) { return []; }
+}
+
+function renderLeaderboard() {
+  const lb = getLeaderboard();
+  const list = document.getElementById('leaderboardList');
+  if (!lb.length) {
+    list.innerHTML = '<div class="lb-empty">No scores yet. Start clicking!</div>';
+    return;
+  }
+  const medals = ['gold','silver','bronze'];
+  list.innerHTML = lb.slice(0,8).map((e,i) => `
+    <div class="lb-entry">
+      <span class="lb-rank ${medals[i]||''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</span>
+      <span class="lb-name ${e.name===state.username?'me':''}">${escHtml(e.name)}</span>
+      <span class="lb-score">🔥${fmtNum(e.score)}</span>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// UI RENDER
+// ============================================================
+function fmtNum(n) {
+  if (n >= 1e9) return (n/1e9).toFixed(2)+'B';
+  if (n >= 1e6) return (n/1e6).toFixed(2)+'M';
+  if (n >= 1e3) return (n/1e3).toFixed(1)+'K';
+  return Math.floor(n).toString();
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function updateUI() {
+  state.nachoPerSec = calcNPS();
+  state.nachoPerClick = calcClickPower();
+
+  document.getElementById('nachoCount').textContent = fmtNum(state.nachos);
+  document.getElementById('perClickDisplay').textContent = fmtNum(state.nachoPerClick);
+  document.getElementById('perSecDisplay').textContent = fmtNum(state.nachoPerSec);
+  document.getElementById('totalLine').textContent = `Total nachos munched: ${fmtNum(state.totalNachos)}`;
+
+  // milestones
+  let ms = MILESTONES.filter(m => state.totalNachos >= m[0]);
+  document.getElementById('milestoneText').textContent = ms.length ? ms[ms.length-1][1] : 'Click the chip to get started!';
+
+  renderShop();
+  renderUpgrades();
+  renderLeaderboard();
+}
+
+function renderShop() {
+  const list = document.getElementById('shopList');
+  list.innerHTML = CHIPS.map(c => {
+    const cost = getChipCost(c.id);
+    const can = state.nachos >= cost;
+    const heatFill = Array.from({length:5},(_,i) => `<div class="heat-pip ${i<c.heat?'on':''}"></div>`).join('');
+    return `
+    <div class="shop-item ${can?'':'disabled'}" onclick="buyChip('${c.id}')">
+      <div class="shop-top">
+        <span class="shop-emoji">${c.emoji}</span>
+        <div class="shop-info">
+          <div class="shop-name">${c.name}</div>
+          <div class="shop-tagline">${c.tag}</div>
+        </div>
+        <span class="shop-count">${state.chips[c.id]}</span>
+      </div>
+      <div class="heat-bar">${heatFill}</div>
+      <div class="shop-bottom">
+        <span class="shop-nps">+${fmtNum(c.nps)}/sec each</span>
+        <span class="shop-cost">🔥 ${fmtNum(cost)}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderUpgrades() {
+  const grid = document.getElementById('upgradesGrid');
+  grid.innerHTML = UPGRADES.map(u => {
+    const bought = state.upgrades[u.id];
+    const can = !bought && state.nachos >= u.cost;
+    return `
+    <button class="upgrade-btn ${bought?'bought':''}" ${bought||can?'':'disabled'} onclick="${bought?'':` buyUpgrade('${u.id}')`}">
+      <div class="upgrade-name">${bought?'✅ ':''} ${u.name}</div>
+      <div class="upgrade-cost">${bought?'OWNED':'🔥 '+fmtNum(u.cost)}</div>
+      <div class="upgrade-desc">${u.desc}</div>
+    </button>`;
+  }).join('');
+}
+
+// ============================================================
+// CLICK LOGIC
+// ============================================================
+function clickChip(e) {
+  const gained = state.nachoPerClick;
+  state.nachos += gained;
+  state.totalNachos += gained;
+  updateUI();
+
+  // floating text
+  const area = document.getElementById('chipArea');
+  const rect = area.getBoundingClientRect();
+  const span = document.createElement('div');
+  span.className = 'float-text';
+  span.textContent = '+' + fmtNum(gained) + ' 🔥';
+  span.style.left = (e.clientX - rect.left - 40) + 'px';
+  span.style.top = (e.clientY - rect.top - 20) + 'px';
+  area.appendChild(span);
+  setTimeout(() => span.remove(), 1200);
+
+  // particles
+  spawnParticles();
+}
+
+function spawnParticles() {
+  const container = document.getElementById('particles');
+  const emojis = ['🔥','✨','💥','🌶️','⚡'];
+  for (let i = 0; i < 3; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    p.style.left = (30 + Math.random() * 140) + 'px';
+    p.style.animationDuration = (0.6 + Math.random() * 0.8) + 's';
+    container.appendChild(p);
+    setTimeout(() => p.remove(), 1400);
+  }
+}
+
+function buyChip(id) {
+  const cost = getChipCost(id);
+  if (state.nachos < cost) return;
+  state.nachos -= cost;
+  state.chips[id]++;
+  notify(`🔥 ${CHIPS.find(c=>c.id===id).name} x${state.chips[id]}!`);
+  updateUI();
+  saveGame();
+}
+
+function buyUpgrade(id) {
+  const u = UPGRADES.find(x => x.id === id);
+  if (!u || state.upgrades[id] || state.nachos < u.cost) return;
+  state.nachos -= u.cost;
+  state.upgrades[id] = true;
+  notify(`⚡ ${u.name} ACTIVATED!`);
+  updateUI();
+  saveGame();
+}
+
+// ============================================================
+// AUTO TICK
+// ============================================================
+setInterval(() => {
+  if (!state.username) return;
+  const nps = calcNPS();
+  if (nps > 0) {
+    const gained = nps / 20; // 50ms tick
+    state.nachos += gained;
+    state.totalNachos += gained;
+    document.getElementById('nachoCount').textContent = fmtNum(state.nachos);
+    document.getElementById('totalLine').textContent = `Total nachos munched: ${fmtNum(state.totalNachos)}`;
+  }
+}, 50);
+
+// save every 5s + update leaderboard
+setInterval(() => {
+  if (state.username) saveGame();
+}, 5000);
+
+// ============================================================
+// NOTIFICATION
+// ============================================================
+let notifTimeout = null;
+function notify(msg) {
+  const old = document.querySelector('.notif');
+  if (old) old.remove();
+  clearTimeout(notifTimeout);
+  const el = document.createElement('div');
+  el.className = 'notif';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  notifTimeout = setTimeout(() => el.remove(), 2800);
+}
+
+// ============================================================
+// USERNAME + START
+// ============================================================
+function startGame() {
+  const name = document.getElementById('usernameInput').value.trim().slice(0,16);
+  if (!name) return;
+  state.username = name;
+  loadGame();
+  state.username = name; // preserve after load
+  document.getElementById('modalOverlay').style.display = 'none';
+  document.getElementById('playerNameDisplay').textContent = `🔥 ${name.toUpperCase()}`;
+  initPeer();
+  updateUI();
+  notify(`Welcome to hell, ${name}! 😈`);
+}
+
+document.getElementById('usernameInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') startGame();
+});
+
+// ============================================================
+// PEERJS CHAT
+// ============================================================
+let peer = null;
+let connections = {};
+let myPeerId = '';
+
+function initPeer() {
+  try {
+    peer = new Peer();
+    peer.on('open', id => {
+      myPeerId = id;
+      document.getElementById('myPeerId').textContent = id;
+    });
+    peer.on('connection', conn => {
+      setupConn(conn);
+      addSystemMsg(`🔥 ${conn.peer.slice(0,8)}... joined the flames!`);
+    });
+    peer.on('error', err => {
+      document.getElementById('myPeerId').textContent = 'Error: ' + err.type;
+    });
+  } catch(e) {
+    document.getElementById('myPeerId').textContent = 'PeerJS unavailable';
+  }
+}
+
+function setupConn(conn) {
+  connections[conn.peer] = conn;
+  updatePeersList();
+
+  conn.on('data', data => {
+    try {
+      const msg = typeof data === 'string' ? JSON.parse(data) : data;
+      if (msg.type === 'chat') {
+        addChatMsg(msg.from, msg.text, false);
+      } else if (msg.type === 'score') {
+        updateLeaderboard(msg.name, msg.score);
+      }
+    } catch(e) {}
+  });
+
+  conn.on('close', () => {
+    delete connections[conn.peer];
+    updatePeersList();
+    addSystemMsg(`💨 ${conn.peer.slice(0,8)}... left.`);
+  });
+
+  // send our score
+  try {
+    conn.on('open', () => {
+      conn.send(JSON.stringify({ type: 'score', name: state.username, score: state.totalNachos }));
+    });
+  } catch(e) {}
+}
+
+function connectToPeer() {
+  if (!peer) { notify('❌ Peer not initialized'); return; }
+  const id = document.getElementById('connectInput').value.trim();
+  if (!id) return;
+  if (id === myPeerId) { notify('❌ That\'s your own ID!'); return; }
+  const conn = peer.connect(id);
+  setupConn(conn);
+  document.getElementById('connectInput').value = '';
+  addSystemMsg(`🔗 Connecting to ${id.slice(0,8)}...`);
+}
+
+function sendChat() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+
+  const msg = JSON.stringify({ type: 'chat', from: state.username || 'Anon', text });
+  Object.values(connections).forEach(c => {
+    try { c.send(msg); } catch(e) {}
+  });
+  addChatMsg(state.username || 'Anon', text, true);
+
+  // also broadcast our score
+  const scoreMsg = JSON.stringify({ type: 'score', name: state.username, score: state.totalNachos });
+  Object.values(connections).forEach(c => {
+    try { c.send(scoreMsg); } catch(e) {}
+  });
+}
+
+function addChatMsg(from, text, isMe) {
+  const box = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'chat-msg' + (isMe ? ' me' : '');
+  div.innerHTML = `<span class="who">${escHtml(from)}: </span><span class="txt">${escHtml(text)}</span>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function addSystemMsg(text) {
+  const box = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'chat-msg system';
+  div.textContent = text;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function updatePeersList() {
+  const count = Object.keys(connections).length;
+  document.getElementById('peersList').textContent = count
+    ? `🔥 ${count} peer${count>1?'s':''} connected`
+    : 'No peers connected';
+}
+
+function copyPeerId() {
+  if (!myPeerId) return;
+  navigator.clipboard.writeText(myPeerId).then(() => notify('📋 Peer ID copied!')).catch(() => {});
+}
+
+// init leaderboard display even before game starts
+renderLeaderboard();
+</script>
+</body>
+</html>
